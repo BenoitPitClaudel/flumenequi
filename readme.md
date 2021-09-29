@@ -1,4 +1,4 @@
-# Flumen Equi - A characterization of Network Requirements for Distributed Machine Learning in the Cloud
+# Flumen Equi - A Characterization of Network Requirements for Distributed Machine Learning in the Cloud
 
 This repository, named Horses River in Latin as an allusion to the significant number of packets, flows, and processes that make up the overall communication stream of distributed learning training, contains the results of my characterization of the response of Distributed Machine Learning (DL) training to the presence of competing 'cross' traffic.
 
