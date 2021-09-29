@@ -8,7 +8,7 @@
     - NCCL - appropriate for GPU
     - 'cuda' - appropriate for GPU
 2. Verify 'nvidia-smi' shows expected consistent versions across all servers
-3. Build a conda environment from 'hvd_21_environment.yml'
+3. Build a conda environment from [hvd_21_environment.yml](hvd_21_environment.yml)
 4. Check CUDA, CUPTI, mpirun are in the path and library path
 5. Run 'horovodrun -cb' to check the horovod build, ensure you see a check against: Pytorch (framework), MPI (controller) and NCCL (tensor operations).
 

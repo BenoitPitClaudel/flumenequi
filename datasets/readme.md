@@ -30,7 +30,7 @@ The folder 'histogram' contains data and figures for histograms of the instantan
 
 The folder 'instantaneous' contains data for the instantaneous packet injection rate over a short, synchronized portion of a run. These are graphed into figures displaying the relative rates across three flows at low and high cross traffic levels (8, 20 Gbps) for models ResNet-50 and BERT-large. Longer processed run-data is not included due to size constraints. 
 
-Fresh runs can be produced using the method described [here](src/processing/readme.md)and in /../../.md using the 'src/processing/sync_instant_tcpdump_processing.py' script
+Fresh runs can be produced using the method described [here](/src/processing/readme.md) and in /../../.md using the [sync_instant_tcpdump_processing.py](/src/processing/sync_instant_tcpdump_processing.py) script
 
 ## Samples of Burst and Consistent Web-search Traffic, and a Generated Load File
 
