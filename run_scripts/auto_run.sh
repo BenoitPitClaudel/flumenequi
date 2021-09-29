@@ -15,7 +15,7 @@ sleep 1
 #call client_run script on client server, in this case cowan, need sudo access for tcpdump
 ssh <user>@cowan.csail.mit.edu '/path/to/james-flumenequi/run_scripts/client_run.sh' &
 
-#call main machine learning task, can swap models, machines, etc as required, further example commands in commands.md
+#call main machine learning task, can swap models, machines, etc as required, further example commands in readme.md
 /usr/local/openmpi-4.1.1/bin/mpirun --allow-run-as-root --tag-output -bind-to none -map-by slot \
 --mca osc ^ucx --mca btl_basverbose 50 --mca btl self,tcp --mca btl_tcp_if_include enp3s0f0 \
 --mca pml ^ucx --mca mtl ^ofi --mca coll ^hcoll --np 3 -H abtin:1,bly:1,dara:1 -x NCCL_IB_DISABLE=1 \
