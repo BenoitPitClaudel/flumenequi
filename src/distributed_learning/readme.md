@@ -8,7 +8,7 @@
     - NCCL - appropriate for GPU
     - 'cuda' - appropriate for GPU
 2. Verify 'nvidia-smi' shows expected consistent versions across all servers
-3. Build a conda environment from 'hvd_21_environment.yml'
+3. Build a conda environment from [hvd_21_environment.yml](hvd_21_environment.yml)
 4. Check CUDA, CUPTI, mpirun are in the path and library path
 5. Run 'horovodrun -cb' to check the horovod build, ensure you see a check against: Pytorch (framework), MPI (controller) and NCCL (tensor operations).
 
@@ -34,7 +34,7 @@ For BERT, the last two lines would be swapped for the line below:
 >python /path/to/file/pytorch_NLP.py > /path/to/logging/files/logfile_iter_model_label.txt
 
 To switch to RDMA, if available (verify with, for example, ibstat), remove the following flags:
-> -x NCCL_IB_DISABLE=1 
+>-x NCCL_IB_DISABLE=1 
 
 and add the following flags:
 >-x NCCL_IB_GID_INDEX=3 -x NCCL_IB_HCA=mlx5_0
