@@ -34,7 +34,7 @@ For BERT, the last two lines would be swapped for the line below:
 >python /path/to/file/pytorch_NLP.py > /path/to/logging/files/logfile_iter_model_label.txt
 
 To switch to RDMA, if available (verify with, for example, ibstat), remove the following flags:
-> -x NCCL_IB_DISABLE=1 
+>-x NCCL_IB_DISABLE=1 
 
 and add the following flags:
 >-x NCCL_IB_GID_INDEX=3 -x NCCL_IB_HCA=mlx5_0
