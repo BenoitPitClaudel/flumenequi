@@ -1,16 +1,16 @@
 CXX=g++
 CXXFLAGS=-lpthread
 
-SRCS=client_test_mod.cpp multi_server_mod.cpp
+SRCS=tcp_load_clientside.cpp  tcp_serverside.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 all: client server
 
 client: $(OBJS)
-        $(CXX) client_test_mod.cpp $(CXXFLAGS) -o client
+	$(CXX) tcp_load_clientside.cpp $(CXXFLAGS) -o client
 
 server: $(OBJS)
-        $(CXX) multi_server_mod.cpp $(CXXFLAGS) -o server
+	$(CXX) tcp_serverside.cpp $(CXXFLAGS) -o server
 
 client.o: client.cpp
 

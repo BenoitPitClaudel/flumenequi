@@ -7,7 +7,9 @@
 #include <arpa/inet.h> 
 #include <unistd.h> 
 #include <string.h> 
-
+#include <ctime>
+#include <mutex>
+#include <fstream>
 using namespace std;
 chrono::high_resolution_clock::time_point start;
 //vector<int> diff;
@@ -18,10 +20,15 @@ int window_duration = 100000;
 std::vector<int> start_time;
 std::vector<long long> fsize;
 std::vector<int> dst;
-
 int num_helper_threads = 3;
 
 int REST_TIME = 5;
+
+long long data_sent=0;  // data sent in bytes (without including pkt headers)
+int probe_period=1000;  // probe period in milliseconds
+bool stop_probe=false;  // flag to stop the probe thread
+std::mutex counter_lock;
+std::mutex stop_lock;
 
 char glob_content[] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vulputate, ex vitae ultrices dapibus, orci ipsum molestie lacus, ut rutrum urna eros et ante. Curabitur rhoncus laoreet lacus vitae sollicitudin. Nunc accumsan risus libero, at convallis est interdum vel. Aliquam placerat felis purus, nec sagittis magna ullamcorper et. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque tellus nisl, efficitur a luctus at, ullamcorper eu ipsum. Cras nec enim nec nunc lobortis pharetra. Donec ac erat fermentum, malesuada sapien ut, consectetur orci.\
 Nam nec finibus velit. Maecenas feugiat orci turpis, eu dignissim elit hendrerit vitae. Vestibulum at lorem eget justo rhoncus rhoncus. Morbi ac magna sit amet orci interdum ultrices et eget augue. Praesent pretium auctor lacus eget volutpat. Cras ultrices nibh sit amet est volutpat venenatis. Sed leo est, tristique id blandit vel, suscipit malesuada ante. Nunc finibus velit vitae egestas feugiat. Mauris condimentum purus nec risus ornare maximus. Sed in pulvinar odio. Fusce dui odio, porttitor vel condimentum vitae, iaculis in nisi. Quisque porttitor felis leo, a eleifend risus pretiu\
@@ -55,7 +62,7 @@ quet arcu, ac egestas nisl sagittis tristique. Nam a libero ac neque convallis l
 Donec malesuada enim in tempor maximus. Nam ut dui a ex condimentum pulvinar faucibus sed risus. Aenean condimentum nibh vulputate faucibus eleifend. Sed sit amet mollis purus. Morbi commodo ex ipsum, et consequat augue interdum eget. Sed et tellus tempor, euismod sem et, auctor mi. Donec scelerisque magna metus, quis tristique eros semper eu. Cras et nunc at neque dapibus laoreet et at mauris. Integer velit neque, imperdiet non vestibulum id, molestie eget neque. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Suspendisse accumsan tortor id magn\
 a lacinia, nec facilisis nibh rutrum. Phasellus facilisis quam felis, mollis varius massa aliquet vitae. Cras quis lorem erat. Curabitur neque velit, tempora auctor et, facilisis non nulla. Nullam aliquet urna sed pulvinar commodo. Integer convallis sodales mi, sed congue est iaculis in. Vivamus tristique neque quis laoreet tempor.";
 
-void function(int time, int index, long long size, int dst, int sock, int PORT){
+void function_(int time, int index, long long size, int dst, int sock, int PORT){
     int valread; 
     struct sockaddr_in serv_addr;
     char local_buffer[8] = {0};
@@ -70,25 +77,25 @@ void function(int time, int index, long long size, int dst, int sock, int PORT){
     // Convert IPv4 and IPv6 addresses from text to binary form 
     //if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)
     if(dst == 0){
-        if(inet_pton(AF_INET, "172.16.0.1", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "192.168.0.11", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else if(dst == 1){
-        if(inet_pton(AF_INET, "172.16.1.1", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "192.168.0.12", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else if(dst == 2){
-        if(inet_pton(AF_INET, "172.16.2.1", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "192.168.0.9", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else{
-        if(inet_pton(AF_INET, "172.16.3.1", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "192.168.0.10", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
@@ -151,6 +158,10 @@ void function(int time, int index, long long size, int dst, int sock, int PORT){
 	//cout << bytes_sent<<"\n";
     }
 
+    counter_lock.lock();
+    data_sent += size + 8;
+    counter_lock.unlock();
+
     this_thread::sleep_for(sleepy);
 
     if(shutdown(sock, SHUT_RDWR) < 0){
@@ -191,7 +202,7 @@ void helper_thread(int index){
         if (i % 200 == 0){
             std::cerr<<"Starting Flow for : "<<i<<" target_time: "<<start_time[i]<< " actual~time: "<< stop_point <<" size: "<<fsize[i]<<"B\n";
         }
-        thread t1(function, start_time[i], i, fsize[i], dst[i], sock, port);
+        thread t1(function_, start_time[i], i, fsize[i], dst[i], sock, port);
         t1.detach();
 
             //threads.push_back(move(t1));
@@ -227,6 +238,37 @@ void helper_thread(int index){
     }*/
 }
 
+void probe_thread() {
+    std::vector<float> bandwidth;   // bandwidth in Gbps
+    std::vector<chrono::high_resolution_clock::time_point> time_stamp;
+    chrono::high_resolution_clock::time_point current = chrono::high_resolution_clock::now();
+    bool stop = false;
+    chrono::milliseconds duration(probe_period);
+    while(!stop) {
+        long long total_data = 0;
+        counter_lock.lock();
+        total_data = data_sent;
+        data_sent = 0;
+        counter_lock.unlock();
+        float bw = float(total_data)*8 / (float(probe_period)*1.0e6);
+        bandwidth.push_back(bw);
+	time_stamp.push_back(chrono::high_resolution_clock::now());
+        stop_lock.lock();
+        stop = stop_probe;
+        stop_lock.unlock();
+        this_thread::sleep_for(duration);
+    }
+    // write bw measure to file
+    fstream file_handle;
+    file_handle.open("bw.txt", ios::trunc | ios::out);
+    for(int iter=0; iter<bandwidth.size(); iter++) {
+        file_handle<<bandwidth[iter]<<" "<< (chrono::duration_cast<chrono::milliseconds>(time_stamp[iter] - current)).count()<<"\n";
+    }
+    file_handle<<bandwidth.size()<<"\n";
+    file_handle.close();
+    return;
+}
+
 int main(){
     int sock;
     cin>>num_flows;
@@ -241,6 +283,7 @@ int main(){
     }
     start = chrono::high_resolution_clock::now();
     //for(int i=0; i<num_helper_threads; i++){
+    thread bw_thread(probe_thread);
     for(int i=0; i<num_helper_threads; i++){
         thread t1(helper_thread, i);
         threads.push_back(move(t1));
@@ -250,11 +293,20 @@ int main(){
     for(int i=0; i<threads.size(); i++){
         threads[i].join();
     }
-    chrono::microseconds dura__(180000000);
+    chrono::microseconds dura__(10000000);
     this_thread::sleep_for(dura__);
     //for(int i=0; i<diff.size();i++){
 	//    cout<<fstart[i]<<" "<<diff[i]<<" "<<dst[i]<<" "<<fsize[i]<<" "<<fct[i]<<"\n";
     //}
     //cout<<"Time for threads:"<<elapsed_.count()<<"\n";
+
+    stop_lock.lock();
+    stop_probe = true;
+    stop_lock.unlock();
+    bw_thread.join();
+
+    auto curtime = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    std::cout << "Client finished sending data at" << std::ctime(&curtime) << "\n";
     return 0;
 }
+
