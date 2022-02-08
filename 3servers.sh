@@ -2,7 +2,6 @@
 set -x
 PS4='+\t '
 let dir="$1+30"
-let log_time="$1-100"
 cd src/network/
 ulimit -n 24096
 ./multi_server.sh &> server_log &

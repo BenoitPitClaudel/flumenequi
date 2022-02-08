@@ -77,25 +77,25 @@ void function_(int time, int index, long long size, int dst, int sock, int PORT)
     // Convert IPv4 and IPv6 addresses from text to binary form 
     //if(inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)<=0)
     if(dst == 0){
-        if(inet_pton(AF_INET, "192.168.0.11", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "172.32.9.1", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else if(dst == 1){
-        if(inet_pton(AF_INET, "192.168.0.12", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "172.32.10.1", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else if(dst == 2){
-        if(inet_pton(AF_INET, "192.168.0.9", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "172.32.11.1", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
     }
     else{
-        if(inet_pton(AF_INET, "192.168.0.10", &serv_addr.sin_addr)<=0){
+        if(inet_pton(AF_INET, "172.32.12.1", &serv_addr.sin_addr)<=0){
 		cerr<<"inet_error\n";
 		return;
 	}
