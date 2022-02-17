@@ -11,6 +11,7 @@ for batch_size in {16..256..48}; do
 	./get_nccl_ports.sh traffic_logs/0G-3-"$batch_size" &
 	sleep $1
 	sleep 5m
+	sleep 4s
 done;
 for load in 10 20; do
         for batch_size in {16..256..48}; do
@@ -22,7 +23,6 @@ for load in 10 20; do
 		sleep "$dir"s
 		sleep 5m
 		mv src/network/bw.txt src/network/"$load"G-3-"$batch_size"
-		sleep 3s
         done;
 done;
 cd traffic_logs

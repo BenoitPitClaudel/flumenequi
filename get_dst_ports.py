@@ -18,4 +18,7 @@ def parse_most_common_ports(fn):
     ports = list(zip(*Counter(dst_port).most_common(4)))[0]
     return list(ports)
 if __name__ == "__main__":
-    print("{} {} {} {}".format(*parse_most_common_ports(sys.argv[1])))
+    try:
+        print("{} {} {} {}".format(*parse_most_common_ports(sys.argv[1])))
+    except Exception as e:
+        print(*parse_most_common_ports(sys.argv[1]))

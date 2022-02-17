@@ -6,6 +6,7 @@ export HOROVOD_NCCL_HOME=$ENV_PREFIX
 export HOROVOD_GPU_OPERATIONS=NCCL
 eval `ssh-agent`
 ssh-add ~/.ssh/mpi_benoit
+ssh-add ~/.ssh/github
 conda activate /home/benoit/pollux/flumenequi/env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.0/extras/CUPTI/lib64:/usr/local/bin/mpirun:/usr/local/cuda-11.0/lib64
 export PATH=$PATH:$LD_LIBRARY_PATH
