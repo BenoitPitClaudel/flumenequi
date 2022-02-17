@@ -22,10 +22,10 @@ for load in 10 20; do
 		cd ../..
 		sleep "$dir"s
 	       	sleep 5m
-		mv src/network/bw.txt src/network/"$load"G-3-"$batch_size"
+		mv src/network/bw.txt src/network/bws/"$load"G-3-"$batch_size"
 	done;
 done;
 cd traffic_logs
 for b in {16..256..48}; do for rate in 0 10 20; do python compute_rate.py "$rate"G-3-$b 0 >> "recap-3-ml-`date +%m-%d-%Y`"; done; done
 cd ../src/network
-for b in {16..256..48}; do for rate in 10 20; do python read_bw.py "$rate"G-3-$b 0 >> "recap-3-bg-`date +%m-%d-%Y`"; done; done
+for b in {16..256..48}; do for rate in 10 20; do python read_bw.py bws/"$rate"G-3-$b 0 >> "recap-3-bg-`date +%m-%d-%Y`"; done; done

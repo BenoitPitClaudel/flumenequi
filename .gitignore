@@ -7,3 +7,7 @@ src/network/server
 src/network/client
 __pycache__/
 src/network/*log*
+traffic_logs/*-*
+test_logs/
+src/network/bws/
+log_*servers

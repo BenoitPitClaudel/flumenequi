@@ -1,5 +1,6 @@
 import numpy as np
-with open("bw.txt") as f:
+import sys
+with open(sys.argv[1]) as f:
     ln = 0
     bws = []
     for line in f:
