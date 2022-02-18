@@ -11,3 +11,6 @@ traffic_logs/*-*
 test_logs/
 src/network/bws/
 log_*servers
+*recap*
+*.png
+

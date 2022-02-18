@@ -3,10 +3,12 @@ import sys
 #import re
 import datetime
 from collections import defaultdict
+import matplotlib.pyplot as plt
 #tcpdump_output_re = re.compile(r'(?P<ts>[0-9]+:[0-9]+:[0-9]+\.[0-9]+)\sIP\s(?P<src>[0-9A-Za-z\.]+)\.(?P<src_port>[0-9]+)\s>\s(?P<dst>[0-9A-Za-z\.]+)\.(?P<dst_port>[0-9]+):.*length\s(?P<payload_length>[0-9]+)')
 packet_padding = 58 
 Gbps=1E-9
 def parse_file(fn, parse_ports):
+    packet_sizes = []
     bws = []
     if parse_ports:
         src_port = defaultdict(int)
@@ -29,6 +31,7 @@ def parse_file(fn, parse_ports):
                     dst_port[dp] += 1
                     src_port[sp] += 1
                 pkt_length = (packet_padding + int(pkt[1].split("length ")[-1]))*8
+                packet_sizes.append(pkt_length)
             except Exception as e:
                 continue
             if ln == 1:
@@ -52,6 +55,10 @@ def parse_file(fn, parse_ports):
     bws[-1] = bws[-1] / (elapsed - int(elapsed))
     avg = np.mean(bws)
     bws = [b for b in bws if (b-avg) < 0.25*avg]
+    with open("recap_packet_sizes", "a") as f:
+        f.write("XP:{}, avg: {}, second moment: {}\n".format(sys.argv[1], np.mean(packet_sizes), np.mean(np.square(packet_sizes))))
+    plt.hist(packet_sizes, bins=100)
+    plt.savefig("packet size distribution.png")
     return bws, elapsed, src_port if parse_ports else None, dst_port if parse_ports else None
 if __name__ == "__main__":
     parse_ports = bool(int(sys.argv[2]))

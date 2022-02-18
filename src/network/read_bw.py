@@ -8,8 +8,8 @@ try:
             ln += 1
             if ln <= 3:
                 continue
-            if ln >= 80:
-                break
+            #if ln >= 80:
+             #   break
             bws.append(float(line.split(" ")[0]))
     avg = np.mean(bws)
     removed = 0

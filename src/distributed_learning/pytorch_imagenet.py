@@ -19,7 +19,7 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
-
+from torchinfo import summary
 import horovod.torch as hvd
 
 #set variables
@@ -157,7 +157,6 @@ def main_worker(gpu, ngpus_per_node, args):
     else:
         print("=> creating model '{}'".format(args.arch))
         model = models.__dict__[args.arch]()
-
     if not torch.cuda.is_available():
         print('using CPU, this will be slow')
     elif args.distributed:
@@ -191,7 +190,6 @@ def main_worker(gpu, ngpus_per_node, args):
 
     # define loss function (criterion) and optimizer
     criterion = nn.CrossEntropyLoss().cuda(args.gpu)
-
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
@@ -258,7 +256,8 @@ def main_worker(gpu, ngpus_per_node, args):
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
         num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-
+    print(summary(model, input_size=(train_loader.batch_size, *train_dataset.image_size)))
+    
     if (args.synth == False):
         valdir = os.path.join(args.data, 'val')
         val_loader = torch.utils.data.DataLoader(
