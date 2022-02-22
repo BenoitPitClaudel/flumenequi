@@ -57,7 +57,9 @@ def parse_file(fn, parse_ports):
     bws = [b for b in bws if (b-avg) < 0.25*avg]
     with open("recap_packet_sizes", "a") as f:
         f.write("XP:{}, avg: {}, second moment: {}\n".format(sys.argv[1], np.mean(packet_sizes), np.mean(np.square(packet_sizes))))
-    plt.hist(packet_sizes, bins=100)
+    plt.hist(np.divide(packet_sizes, 8), bins=100)
+    plt.xlabel("PyTorch all reduce packet size(bytes)")
+    plt.title("ML traffic packet size distribution ({})".format(sys.argv[1]))
     plt.savefig("packet size distribution.png")
     return bws, elapsed, src_port if parse_ports else None, dst_port if parse_ports else None
 if __name__ == "__main__":
