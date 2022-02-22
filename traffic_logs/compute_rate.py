@@ -55,8 +55,10 @@ def parse_file(fn, parse_ports):
     bws[-1] = bws[-1] / (elapsed - int(elapsed))
     avg = np.mean(bws)
     bws = [b for b in bws if (b-avg) < 0.25*avg]
+    packet_sizes = np.array(packet_sizes)
+    packet_sizes = packet_sizes[np.nonzero(packet_sizes)]
     with open("recap_packet_sizes", "a") as f:
-        f.write("XP:{}, avg: {}, second moment: {}\n".format(sys.argv[1], np.mean(packet_sizes), np.mean(np.square(packet_sizes))))
+        f.write("XP:{}, avg: {}, second moment: {}\n".format(sys.argv[1], np.nanmean(packet_sizes), np.nanmean(np.square(packet_sizes))))
     plt.hist(np.divide(packet_sizes, 8), bins=100)
     plt.xlabel("PyTorch all reduce packet size(bytes)")
     plt.title("ML traffic packet size distribution ({})".format(sys.argv[1]))
