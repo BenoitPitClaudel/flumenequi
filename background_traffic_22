@@ -7,13 +7,7 @@ cd src/network/
 ulimit -n 24096
 ./multi_server.sh &> server_log &
 cd ../..
-for batch_size in {16..256..48}; do
-	./get_nccl_ports.sh traffic_logs/0G-3-"$batch_size" &
-	sleep $1
-	sleep 5m
-	sleep 4s
-done;
-for load in 10 20; do
+for load in 22 23; do
         for batch_size in {16..256..48}; do
 		./get_nccl_ports.sh traffic_logs/"$load"G-3-"$batch_size" &
 		sleep 19s
@@ -26,4 +20,4 @@ for load in 10 20; do
         done;
 done;
 cd traffic_logs
-for b in {16..256..48}; do for rate in 0 10 20; do python compute_rate.py "$rate"G-3-$b 0 >> "recap-3-ml-`date +%m-%d-%Y`"; done; done
+for b in {16..256..48}; do for rate in 22 23; do python compute_rate.py "$rate"G-3-$b 0 >> "recap-3-ml-`date +%m-%d-%Y`"; done; done
