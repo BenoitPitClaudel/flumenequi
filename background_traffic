@@ -18,7 +18,7 @@ for load in 10 20; do
 		./get_nccl_ports.sh traffic_logs/"$load"G-3-"$batch_size" &
 		sleep 19s
 		cd src/network/
-		./client < configs/$dir/"$load"G_consist_to_"$2".config &> client_log_"$2" &
+		./client < configs/$dir/"$load"G_consist_to_"$2".config &> client_logs/"$load"G-3-"$batch_size" &
                 cd ../..
 		sleep "$dir"s
 		sleep 5m
@@ -27,3 +27,5 @@ for load in 10 20; do
 done;
 cd traffic_logs
 for b in {16..256..48}; do for rate in 0 10 20; do python compute_rate.py "$rate"G-3-$b 0 >> "recap-3-ml-`date +%m-%d-%Y`"; done; done
+cd ../src/network
+for b in {16..256..48}; do for rate in 10 20; do python read_bw.py bws/"$rate"G-3-$b 0 >> "recap-3-bg-`date +%m-%d-%Y`"; done; done
