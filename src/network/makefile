@@ -15,3 +15,9 @@ server: $(OBJS)
 client.o: client.cpp
 
 server.o: server.cpp
+udp_client: $(OBJS)
+	        $(CXX) udp_clientside.cpp $(CXXFLAGS) -o client
+
+udp_server: $(OBJS)
+	        $(CXX) udp_serverside.cpp $(CXXFLAGS) -o server
+udp: udp_client udp_server
