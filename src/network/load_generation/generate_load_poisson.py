@@ -41,9 +41,8 @@ def main(target_load,destination,duration,filename):
     cum_sum_times = np.cumsum(flow_times)
 
     samples = len(cum_sum_times)
-
-    size = random.choices(weighted_size[0,:],cum_weights=weighted_size[1,:],k=samples)
-
+    #size = random.choices(weighted_size[0,:],cum_weights=weighted_size[1,:],k=samples)
+    size = [np.trunc(np.average(weighted_size[0, 1:], weights=(weighted_size[1, 1:] - weighted_size[1, :-1])))] * samples
     size_bytes = np.multiply(size,1460)
 
     write_output(filename, destination, size_bytes, cum_sum_times)
