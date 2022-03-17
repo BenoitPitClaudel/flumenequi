@@ -198,7 +198,7 @@ void helper_thread(int index){
     }
 }
 
-void probe_thread() {
+void probe_thread(int dst) {
     std::vector<float> bandwidth;   // bandwidth in Gbps
     std::vector<chrono::high_resolution_clock::time_point> time_stamp;
     chrono::high_resolution_clock::time_point current = chrono::high_resolution_clock::now();
@@ -220,7 +220,7 @@ void probe_thread() {
     }
     // write bw measure to file
     fstream file_handle;
-    file_handle.open("bw.txt", ios::trunc | ios::out);
+    file_handle.open("bw" + std::to_string(dst) + ".txt", ios::trunc | ios::out);
     for(int iter=0; iter<bandwidth.size(); iter++) {
         file_handle<<bandwidth[iter]<<" "<< (chrono::duration_cast<chrono::milliseconds>(time_stamp[iter] - current)).count()<<"\n";
     }
@@ -243,7 +243,7 @@ int main(){
     }
     start = chrono::high_resolution_clock::now();
     //for(int i=0; i<num_helper_threads; i++){
-    thread bw_thread(probe_thread);
+    thread bw_thread(probe_thread, dst[0]);
     for(int i=0; i<num_helper_threads; i++){
         thread t1(helper_thread, i);
         threads.push_back(move(t1));
