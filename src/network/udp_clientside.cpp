@@ -253,7 +253,7 @@ int main(){
     for(int i=0; i<threads.size(); i++){
         threads[i].join();
     }
-    chrono::microseconds dura__(10000000);
+    chrono::microseconds dura__(1000000);
     this_thread::sleep_for(dura__);
     //for(int i=0; i<diff.size();i++){
 	//    cout<<fstart[i]<<" "<<diff[i]<<" "<<dst[i]<<" "<<fsize[i]<<" "<<fct[i]<<"\n";
