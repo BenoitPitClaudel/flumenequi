@@ -5,9 +5,9 @@ let dir="$1+30"
 cd src/network/
 ulimit -n 24096
 for batch_size in {16..256..48}; do
-	sleep 0s
-	sleep 0s
-	sleep 1s
+	sleep $1
+	sleep 1m
+	sleep 4s
 done;
 mkdir -p bws
 for load in 1 5 10 15 20 24; do

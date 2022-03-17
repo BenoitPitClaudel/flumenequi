@@ -220,7 +220,7 @@ void probe_thread(int dst) {
     }
     // write bw measure to file
     fstream file_handle;
-    file_handle.open("bw" + std::to_string(dst) + ".txt", ios::trunc | ios::out);
+    file_handle.open("bw-" + std::to_string(dst) + ".txt", ios::trunc | ios::out);
     for(int iter=0; iter<bandwidth.size(); iter++) {
         file_handle<<bandwidth[iter]<<" "<< (chrono::duration_cast<chrono::milliseconds>(time_stamp[iter] - current)).count()<<"\n";
     }
