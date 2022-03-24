@@ -21,6 +21,7 @@ std::vector<int> start_time;
 std::vector<long long> fsize;
 std::vector<int> dst;
 int num_helper_threads = 3;
+std::vector<int> flow_durations;
 
 int REST_TIME = 5;
 
@@ -29,7 +30,7 @@ int probe_period=1000;  // probe period in milliseconds
 bool stop_probe=false;  // flag to stop the probe thread
 std::mutex counter_lock;
 std::mutex stop_lock;
-
+std::mutex flow_duration_lock;
 char glob_content[] = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vulputate, ex vitae ultrices dapibus, orci ipsum molestie lacus, ut rutrum urna eros et ante. Curabitur rhoncus laoreet lacus vitae sollicitudin. Nunc accumsan risus libero, at convallis est interdum vel. Aliquam placerat felis purus, nec sagittis magna ullamcorper et. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque tellus nisl, efficitur a luctus at, ullamcorper eu ipsum. Cras nec enim nec nunc lobortis pharetra. Donec ac erat fermentum, malesuada sapien ut, consectetur orci.\
 Nam nec finibus velit. Maecenas feugiat orci turpis, eu dignissim elit hendrerit vitae. Vestibulum at lorem eget justo rhoncus rhoncus. Morbi ac magna sit amet orci interdum ultrices et eget augue. Praesent pretium auctor lacus eget volutpat. Cras ultrices nibh sit amet est volutpat venenatis. Sed leo est, tristique id blandit vel, suscipit malesuada ante. Nunc finibus velit vitae egestas feugiat. Mauris condimentum purus nec risus ornare maximus. Sed in pulvinar odio. Fusce dui odio, porttitor vel condimentum vitae, iaculis in nisi. Quisque porttitor felis leo, a eleifend risus pretiu\
 m et. Sed ac vehicula massa. Nulla lorem diam, maximus vel quam quis, varius pretium ante. In rhoncus tincidunt placerat. Donec gravida nisl sed augue bibendum malesuada. Mauris venenatis nisl et odio placerat, ac ullamcorper ipsum commodo. Donec sodales nibh id sem lobortis, vitae varius mi sollicitudin. Suspendisse vulputate aliquet arcu, ac egestas nisl sagittis tristique. Nam a libero ac neque convallis laoreet in ac lorem. Fusce sit amet risus dui. Vestibulum eu semper massa. Duis rutrum tortor quis nisl faucibus hendrerit. Aliquam dignissim eros ut turpis lacinia, molestie iaculi\
@@ -139,6 +140,7 @@ void function_(int time, int index, long long size, int dst, int sock, int PORT)
     //unsigned int sizeofcontents = sizeof(content);
 
     chrono::microseconds sleepy(REST_TIME);
+    chrono::high_resolution_clock::time_point flow_start = chrono::high_resolution_clock::now();
 
     while(bytes_sent < size){
         int send_r;
@@ -153,15 +155,18 @@ void function_(int time, int index, long long size, int dst, int sock, int PORT)
                 send_r = send(sock, glob_content, chunk_size, 0);
                 bytes_sent += send_r;
             }
-        this_thread::sleep_for(sleepy);
+        //this_thread::sleep_for(sleepy);
 	//cout << send_r << "\n";
 	//cout << bytes_sent<<"\n";
     }
-
+    chrono::high_resolution_clock::time_point flow_end = chrono::high_resolution_clock::now();
     counter_lock.lock();
     data_sent += size + 8;
     counter_lock.unlock();
-
+    int elapsed = (chrono::duration_cast<chrono::microseconds>(flow_end - flow_start)).count();
+    flow_duration_lock.lock();
+    flow_durations.push_back(elapsed);
+    flow_duration_lock.unlock();
     this_thread::sleep_for(sleepy);
 
     if(shutdown(sock, SHUT_RDWR) < 0){
@@ -181,7 +186,7 @@ void function_(int time, int index, long long size, int dst, int sock, int PORT)
 
 void helper_thread(int index){
     int sock;
-    int port  = 818080+index;
+    int port  = 818083+index;
     //std::vector<thread> threads;
     //threads.reserve(num_flows/num_helper_threads + 2);
     int start_point = start_time[0];
@@ -202,9 +207,9 @@ void helper_thread(int index){
         if (i % 200 == 0){
             std::cerr<<"Starting Flow for : "<<i<<" target_time: "<<start_time[i]<< " actual~time: "<< stop_point <<" size: "<<fsize[i]<<"B\n";
         }
+	chrono::high_resolution_clock::time_point flow_start = chrono::high_resolution_clock::now();
         thread t1(function_, start_time[i], i, fsize[i], dst[i], sock, port);
         t1.detach();
-
             //threads.push_back(move(t1));
         if(start_time[i] > stop_point){
             while(stop_point + window_duration < start_time[i]){
@@ -293,7 +298,7 @@ int main(){
     for(int i=0; i<threads.size(); i++){
         threads[i].join();
     }
-    chrono::microseconds dura__(10000000);
+    chrono::microseconds dura__(1000000);
     this_thread::sleep_for(dura__);
     //for(int i=0; i<diff.size();i++){
 	//    cout<<fstart[i]<<" "<<diff[i]<<" "<<dst[i]<<" "<<fsize[i]<<" "<<fct[i]<<"\n";
@@ -304,7 +309,14 @@ int main(){
     stop_probe = true;
     stop_lock.unlock();
     bw_thread.join();
-
+    
+    fstream file_handle;
+    file_handle.open("flow_durations.txt", ios::trunc | ios::out);
+    for(int iter=0; iter<flow_durations.size(); iter++) {
+        file_handle<<flow_durations[iter]<<"\n";
+    }
+    file_handle<<flow_durations.size()<<"\n";
+    file_handle.close();
     auto curtime = chrono::system_clock::to_time_t(chrono::system_clock::now());
     std::cout << "Client finished sending data at" << std::ctime(&curtime) << "\n";
     return 0;
