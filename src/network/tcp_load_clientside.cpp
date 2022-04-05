@@ -207,7 +207,6 @@ void helper_thread(int index){
         if (i % 200 == 0){
             std::cerr<<"Starting Flow for : "<<i<<" target_time: "<<start_time[i]<< " actual~time: "<< stop_point <<" size: "<<fsize[i]<<"B\n";
         }
-	chrono::high_resolution_clock::time_point flow_start = chrono::high_resolution_clock::now();
         thread t1(function_, start_time[i], i, fsize[i], dst[i], sock, port);
         t1.detach();
             //threads.push_back(move(t1));

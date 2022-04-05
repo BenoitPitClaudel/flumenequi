@@ -4,13 +4,15 @@ CXXFLAGS=-lpthread
 SRCS=tcp_load_clientside.cpp  tcp_serverside.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-all: client server
+all: tcp udp
 
-client: $(OBJS)
-	$(CXX) tcp_load_clientside.cpp $(CXXFLAGS) -o client
+tcp: tcp_client tcp_server
 
-server: $(OBJS)
-	$(CXX) tcp_serverside.cpp $(CXXFLAGS) -o server
+tcp_client: $(OBJS)
+	$(CXX) tcp_load_clientside.cpp $(CXXFLAGS) -o tcp_client
+
+tcp_server: $(OBJS)
+	$(CXX) tcp_serverside.cpp $(CXXFLAGS) -o tcp_server
 
 client.o: client.cpp
 
